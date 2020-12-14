@@ -42,14 +42,14 @@ def predict_(data: fn):
         time.sleep(1)
 
     # Print the detected text, line by line
-    sentences = ''
+    sentences = []
     if get_handw_text_results.status == OperationStatusCodes.succeeded:
         for text_result in get_handw_text_results.analyze_result.read_results:
             for line in text_result.lines:
-                sentences = sentences + ' ' + line.text 
+                sentences.append(line.text )
     #             print(line.text)
     #             print(line.bounding_box)
-    return str(sentences)
+    return [line for line in sentences]
 
 @app.post('/predict handwriting local images')
 async def predict_(Image: UploadFile = File(...)):
