@@ -8,9 +8,7 @@ import requests
 import uvicorn
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
-import os
-import ffmpeg
-import speech_recognition as sr
+
 
 subscription_key = "9f4ab505de56495da6aa7a78a3c9cb60"
 endpoint = "https://ocr-handwriting-extraction.cognitiveservices.azure.com/"
@@ -79,23 +77,6 @@ async def predict_(Image: UploadFile = File(...)):
                 sentences.append(line.text)
     
     return [line for line in sentences]
-
-@app.post('/Extract text from video')
-async def predict_(Video: UploadFile = File(...)):
-    command2mp3 = "ffmpeg -i Video.file Bolna.mp3"
-    command2wav = "ffmpeg -i Bolna.mp3 Bolna.wav"
-
-#execute video conversion commands
-
-    os.system(command2mp3)
-    os.system(command2wav)
-
-#load wav file
-    r = sr.Recognizer()
-    with sr.AudioFile('Bolna.wav') as source:
-        audio = r.record(source, duration=120) 
-    return (r.recognize_google(audio))
-
 
 
 #if __name__=="__handwriting_extraction_fastapi__":
