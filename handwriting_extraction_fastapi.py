@@ -5,7 +5,7 @@ from msrest.authentication import CognitiveServicesCredentials
 
 import time
 import os
-#import ffmpeg
+import ffmpeg
 import speech_recognition as sr
 
 import requests
