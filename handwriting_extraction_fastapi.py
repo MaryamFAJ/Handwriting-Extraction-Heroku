@@ -4,6 +4,10 @@ from azure.cognitiveservices.vision.computervision.models import VisualFeatureTy
 from msrest.authentication import CognitiveServicesCredentials
 
 import time
+import os
+#import ffmpeg
+import speech_recognition as sr
+
 import requests
 import uvicorn
 from fastapi import FastAPI, UploadFile, File
@@ -77,6 +81,46 @@ async def predict_(Image: UploadFile = File(...)):
                 sentences.append(line.text)
     
     return [line for line in sentences]
+
+@app.post('/Extract text from video')
+def predict_video(Video: UploadFile = File(...)):
+
+    command2mp3 = "ffmpeg -i " + Video.filename + " Bolna.mp3"
+    command2wav = "ffmpeg -i Bolna.mp3 Bolna.wav"
+
+    print(type(Video.filename))
+
+#execute video conversion commands
+
+    os.system(command2mp3)
+    os.system(command2wav)
+
+#load wav file
+    r = sr.Recognizer()
+    with sr.AudioFile('Bolna.wav') as source:
+        audio = r.record(source, duration=120) 
+    return (r.recognize_google(audio))
+
+
+@app.post('/Extract text from audio')
+def predict_audio(Audio: UploadFile = File(...)):
+
+    command2wav = "ffmpeg -i " + Audio.filename + " Bolna.wav"
+    # command2wav = "ffmpeg -i Bolna.mp3 Bolna.wav"
+
+    # print(type(Video.filename))
+
+#execute video conversion commands
+
+    # os.system(command2mp3)
+    os.system(command2wav)
+
+#load wav file
+    r = sr.Recognizer()
+    with sr.AudioFile('Bolna.wav') as source:
+        audio = r.record(source, duration=120) 
+    return (r.recognize_google(audio))
+
 
 
 #if __name__=="__handwriting_extraction_fastapi__":
