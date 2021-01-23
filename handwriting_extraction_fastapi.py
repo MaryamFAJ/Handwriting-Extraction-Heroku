@@ -128,9 +128,9 @@ def predict_audio(Audio: UploadFile = File(...)):
     return (r.recognize_google(audio))
 
 @app.post('/Extract text from audio(Azure)')
-def predict_audio(Audio: UploadFile = File(...)):
+def predict_audio(audio: UploadFile = File(...)):
 
-    audio_input = speechsdk.AudioConfig(filename=Audio.filename)
+    audio_input = speechsdk.AudioConfig(filename=audio.filename)
     speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
     result = speech_recognizer.recognize_once_async().get()
     return(result.text)
