@@ -2,6 +2,8 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
+import azure.cognitiveservices.speech as speechsdk
+
 
 import time
 import os
@@ -12,6 +14,10 @@ import requests
 import uvicorn
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
+
+#azure speech sdk config
+speech_key, service_region = "f83769a3b41a4835a6bbd8b1220919cf", "eastus"
+speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
 
 
 subscription_key = "9f4ab505de56495da6aa7a78a3c9cb60"
@@ -120,6 +126,15 @@ def predict_audio(Audio: UploadFile = File(...)):
     with sr.AudioFile('Bolna.wav') as source:
         audio = r.record(source, duration=120) 
     return (r.recognize_google(audio))
+
+@app.post('/Extract text from audio(Azure)')
+def predict_audio(Audio: UploadFile = File(...)):
+
+    audio_input = speechsdk.AudioConfig(filename=Audio.filename)
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
+    result = speech_recognizer.recognize_once_async().get()
+    return(result.text)
+
 
 
 
