@@ -2,23 +2,18 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
 from msrest.authentication import CognitiveServicesCredentials
-import azure.cognitiveservices.speech as speechsdk
+import os
+# import ffmpeg
+import speech_recognition as sr
+import shutil
 
 
 import time
-import os
-import ffmpeg
-import speech_recognition as sr
-
 import requests
 import uvicorn
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
-
-#azure speech sdk config
-speech_key, service_region = "f83769a3b41a4835a6bbd8b1220919cf", "eastus"
-speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
-
+from textblob import TextBlob
 
 subscription_key = "9f4ab505de56495da6aa7a78a3c9cb60"
 endpoint = "https://ocr-handwriting-extraction.cognitiveservices.azure.com/"
@@ -35,7 +30,7 @@ class fn(BaseModel):
 
 app= FastAPI()
 
-@app.post('/predict handwriting url')
+@app.post('/Extract text from cloud image')
 def predict_(data: fn):
     data = data.dict()
     url = data['url']
@@ -53,16 +48,19 @@ def predict_(data: fn):
         time.sleep(1)
 
     # Print the detected text, line by line
-    sentences = []
+#     sentences = ''
     if get_handw_text_results.status == OperationStatusCodes.succeeded:
         for text_result in get_handw_text_results.analyze_result.read_results:
             for line in text_result.lines:
-                sentences.append(line.text )
+                sentences = ''.join(line.text)
     #             print(line.text)
     #             print(line.bounding_box)
-    return [line for line in sentences]
+    
+    text = TextBlob(sentences)
 
-@app.post('/predict handwriting local images')
+    return str(text.correct())
+
+@app.post('/Extract text from local image')
 async def predict_(Image: UploadFile = File(...)):
     
     # Call API with image and raw response (allows you to get the operation location)
@@ -84,59 +82,52 @@ async def predict_(Image: UploadFile = File(...)):
     if recognize_handwriting_result.status == OperationStatusCodes.succeeded:
         for text_result in recognize_handwriting_result.analyze_result.read_results:
             for line in text_result.lines:
-                sentences.append(line.text)
+                correct_line = TextBlob(line.text).correct()
+                sentences.append(str(correct_line))
     
     return [line for line in sentences]
 
 @app.post('/Extract text from video')
 def predict_video(Video: UploadFile = File(...)):
 
-    command2mp3 = "ffmpeg -i " + Video.filename + " Bolna.mp3"
-    command2wav = "ffmpeg -i Bolna.mp3 Bolna.wav"
+    with open("file.mp4", "wb") as buffer:
+        shutil.copyfileobj(Video.file, buffer)
 
-    print(type(Video.filename))
-
-#execute video conversion commands
+    # full_path = os.path.abspath(Video.filename)
+    command2mp3 = 'ffmpeg -i ' + 'file.mp4' + " audio.mp3"
+    command2wav = "ffmpeg -i audio.mp3 wave.wav"
+    command2del = 'del audio.mp3 wave.wav file.mp4'
 
     os.system(command2mp3)
     os.system(command2wav)
 
-#load wav file
     r = sr.Recognizer()
-    with sr.AudioFile('Bolna.wav') as source:
+    with sr.AudioFile('wave.wav') as source:
         audio = r.record(source, duration=120) 
+    
+    os.system(command2del) # delete converted files
+
     return (r.recognize_google(audio))
 
 
 @app.post('/Extract text from audio')
 def predict_audio(Audio: UploadFile = File(...)):
 
-    command2wav = "ffmpeg -i " + Audio.filename + " Bolna.wav"
-    # command2wav = "ffmpeg -i Bolna.mp3 Bolna.wav"
+    with open("file.mp3", "wb") as buffer:
+        shutil.copyfileobj(Audio.file, buffer)
 
-    # print(type(Video.filename))
+    command2wav = "ffmpeg -i " + "file.mp3" + " audio.wav"
+    command2del = 'del file.mp3 audio.wav'
 
-#execute video conversion commands
-
-    # os.system(command2mp3)
     os.system(command2wav)
 
-#load wav file
     r = sr.Recognizer()
-    with sr.AudioFile('Bolna.wav') as source:
-        audio = r.record(source, duration=120) 
+    with sr.AudioFile('audio.wav') as source:
+        audio = r.record(source,duration=120) 
+    
+    os.system(command2del)  # deleted converted files
+
     return (r.recognize_google(audio))
-
-@app.post('/Extract text from audio(Azure)')
-def predict_audio(audio: UploadFile = File(...)):
-
-    audio_input = speechsdk.AudioConfig(filename=audio.filename)
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
-    result = speech_recognizer.recognize_once_async().get()
-    return(result.text)
-
-
-
 
 #if __name__=="__handwriting_extraction_fastapi__":
 #    uvicorn.run(app, host='127.0.0.1', port=8000)
