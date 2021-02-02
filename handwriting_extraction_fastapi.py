@@ -107,7 +107,7 @@ def predict_video(Video: UploadFile = File(...)):
     
     os.system(command2del) # delete converted files
 
-    return (r.recognize_google(audio, language='en'))
+    return (r.recognize(audio, language='en'))
 
 
 @app.post('/Extract text from audio')
