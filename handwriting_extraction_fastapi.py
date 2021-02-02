@@ -127,7 +127,7 @@ def predict_audio(Audio: UploadFile = File(...)):
     
     os.system(command2del)  # deleted converted files
 
-    return (r.recognize(audio))
+    return (r.recognize_google(audio))
 
 #if __name__=="__handwriting_extraction_fastapi__":
 #    uvicorn.run(app, host='127.0.0.1', port=8000)
