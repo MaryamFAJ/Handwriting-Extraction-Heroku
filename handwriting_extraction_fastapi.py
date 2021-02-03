@@ -13,7 +13,7 @@ import requests
 import uvicorn
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
-#from textblob import TextBlob
+from textblob import TextBlob
 
 subscription_key = "9f4ab505de56495da6aa7a78a3c9cb60"
 endpoint = "https://ocr-handwriting-extraction.cognitiveservices.azure.com/"
