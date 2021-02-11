@@ -87,30 +87,28 @@ async def predict_(Image: UploadFile = File(...)):
     
     return [line for line in sentences]
 
-@app.post('/Extract text from video')
+@app.post('/Transcribe video')
 def predict_video(Video: UploadFile = File(...)):
 
     with open("file.mp4", "wb") as buffer:
         shutil.copyfileobj(Video.file, buffer)
 
     # full_path = os.path.abspath(Video.filename)
-    command2mp3 = 'ffmpeg -i ' + 'file.mp4' + " audio.mp3"
-    command2wav = "ffmpeg -i audio.mp3 wave.wav"
-    command2del = 'del audio.mp3 wave.wav file.mp4'
+    command2wav = 'ffmpeg -i ' + 'file.mp4' + ' -ab 160k -ac 2 -ar 44100 -vn' + " wave.wav"
+    command2del = 'del wave.wav file.mp4'
 
-    os.system(command2mp3)
     os.system(command2wav)
 
     r = sr.Recognizer()
     with sr.AudioFile('wave.wav') as source:
-        audio = r.record(source, duration=120) 
+        audio = r.record(source, duration=180) 
     
-    #os.system(command2del) # delete converted files
+    os.system(command2del) # delete converted files
 
-    return (r.recognize_google(audio, language='en',  show_all=True))
+    return (r.recognize_google(audio))
 
 
-@app.post('/Extract text from audio')
+@app.post('/Transcribe audio')
 def predict_audio(Audio: UploadFile = File(...)):
 
     with open("file.mp3", "wb") as buffer:
@@ -123,13 +121,14 @@ def predict_audio(Audio: UploadFile = File(...)):
 
     r = sr.Recognizer()
     with sr.AudioFile('audio.wav') as source:
-        audio = r.record(source,duration=120) 
+        audio = r.record(source,duration=180) 
     
-    #os.system(command2del)  # deleted converted files
+    os.system(command2del)  # deleted converted files
 
     return (r.recognize_google(audio))
 
-#if __name__=="__handwriting_extraction_fastapi__":
-#    uvicorn.run(app, host='127.0.0.1', port=8000)
+
+# if __name__=="__handwriting_extraction_fastapi__":
+#     uvicorn.run(app, host='127.0.0.1', port=8080)
 
 
