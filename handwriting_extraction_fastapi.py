@@ -95,7 +95,7 @@ def predict_video(Video: UploadFile = File(...)):
 
     # full_path = os.path.abspath(Video.filename)
     command2wav = 'ffmpeg -i ' + 'file.mp4' + ' -ab 160k -ac 2 -ar 44100 -vn' + " wave.wav"
-    command2del = 'del wave.wav file.mp4'
+    command2del = 'rm wave.wav file.mp4'
 
     os.system(command2wav)
 
