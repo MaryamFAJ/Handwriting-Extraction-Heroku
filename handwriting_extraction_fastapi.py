@@ -48,17 +48,16 @@ def predict_(data: fn):
         time.sleep(1)
 
     # Print the detected text, line by line
-#     sentences = ''
+    sentences = []
     if get_handw_text_results.status == OperationStatusCodes.succeeded:
         for text_result in get_handw_text_results.analyze_result.read_results:
             for line in text_result.lines:
-                sentences = ''.join(line.text)
-    #             print(line.text)
+                correct_line = TextBlob(line.text).correct()
+                sentences.append(str(correct_line))
     #             print(line.bounding_box)
     
-    text = TextBlob(sentences)
+    return [line for line in sentences]
 
-    return str(text.correct())
 
 @app.post('/Extract text from local image')
 async def predict_(Image: UploadFile = File(...)):
