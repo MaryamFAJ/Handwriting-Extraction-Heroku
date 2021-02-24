@@ -102,7 +102,7 @@ def predict_video(Video: UploadFile = File(...)):
     with sr.AudioFile('wave.wav') as source:
         audio = r.record(source, duration=180) 
     
-    rm command2del # delete converted files
+    os.system(command2del) # delete converted files
 
     return (r.recognize_google(audio))
 
