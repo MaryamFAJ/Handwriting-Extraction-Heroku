@@ -122,7 +122,7 @@ def predict_audio(Audio: UploadFile = File(...)):
     with sr.AudioFile('audio.wav') as source:
         audio = r.record(source,duration=180) 
     
-    rm command2del  # deleted converted files
+    os.system(command2del)  # deleted converted files
 
     return (r.recognize_google(audio))
 
